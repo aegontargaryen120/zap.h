@@ -282,7 +282,8 @@ bool zap_rebuild_self(int argc, char **argv, const char *source_path) {
   Cmd cmd = {0};
 
   cc(&cmd);
-  cc_flags(&cmd);
+  cmd_append(&cmd, "-Wall");
+  cmd_append(&cmd, "-Wextra");
   cc_output(&cmd, tmp_path);
   cc_inputs(&cmd, source_path);
 
