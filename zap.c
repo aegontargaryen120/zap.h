@@ -7,7 +7,10 @@ int main(int argc, char **argv) {
 
   printf(info_fmt"Creating directory `bin`...\n");
   
-  if (!mkdir_if_not_exists("bin")) return 1;
+  if (!mkdir_if_not_exists("bin")) {
+    fprintf(stderr, err_fmt"Could not create directory.\n");
+    return 1;
+  }
   
   cc(&cmd);
   cc_flags(&cmd);
@@ -17,14 +20,20 @@ int main(int argc, char **argv) {
   printf(cmd_fmt);
   cmd_dump(&cmd);
   
-  if (!cmd_run(&cmd)) return 1;
+  if (!cmd_run(&cmd)) {
+    fprintf(stderr, err_fmt"Compilation failed.\n");
+    return 1;
+  }
 
   cmd_append(&cmd, "./bin/main");
 
   printf(cmd_fmt);
   cmd_dump(&cmd);
   
-  if (!cmd_run(&cmd)) return 1;
+  if (!cmd_run(&cmd)) {
+    fprintf(stderr, err_fmt"Could not execute binary file.\n");
+    return 1;
+  }
 
   cmd_append(&cmd, "rm");
   cmd_append(&cmd, "-rf");
@@ -34,7 +43,10 @@ int main(int argc, char **argv) {
   printf(cmd_fmt);
   cmd_dump(&cmd);
   
-  if (!cmd_run(&cmd)) return 1;
+  if (!cmd_run(&cmd)) {
+    fprintf(stderr, err_fmt"Could not remove files.\n");
+    return 1;
+  }
   
   return 0;
 }
