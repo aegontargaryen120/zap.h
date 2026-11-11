@@ -45,6 +45,16 @@ void cc_inputs(Cmd *cmd, const char *input);
 #define cmd_fmt "CMD: "
 #define zap_fmt "ZAP: "
 
+typedef struct {
+  size_t count;
+  char **values;
+} Args;
+
+Args args_parse(int argc, char **argv);
+const char *args_get(Args *args, size_t index);
+bool args_is(Args *args, size_t index, const char *value);
+const char *args_option(Args *args, const char *option);
+
 #ifdef ZAP_IMPLEMENTATION
 
 void cmd_append(Cmd *cmd, const char *arg) {
@@ -146,6 +156,7 @@ bool cmd_run(Cmd *cmd) {
       continue;
 
     perror("waitpid");
+    cmd_clear(cmd);
     return false;
   }
 
@@ -229,7 +240,7 @@ void cmd_dump(Cmd *cmd) {
   for (size_t i = 0; i < cmd->count; ++i) {
     printf("%s ", cmd->items[i]);
   }
-  printf("\b\n");
+  printf("\n");
 }
 
 bool zap_rebuild_self(int argc, char **argv, const char *source_path) {
@@ -313,6 +324,73 @@ bool zap_rebuild_self(int argc, char **argv, const char *source_path) {
   perror("execvp");
   return false;
 }
+
+Args args_parse(int argc, char **argv) {
+  Args args = {0};
+
+  if (argc <= 1 || argv == NULL)
+    return args;
+
+  args.count = (size_t)(argc - 1);
+  args.values = argv + 1;
+
+  return args;
+}
+
+const char *args_get(Args *args, size_t index) {
+  if (args == NULL ||
+      args->values == NULL ||
+      index >= args->count)
+    return NULL;
+
+  return args->values[index];
+}
+
+bool args_is(Args *args, size_t index, const char *value) {
+  const char *arg = args_get(args, index);
+
+  return arg != NULL &&
+    value != NULL &&
+    strcmp(arg, value) == 0;
+}
+
+
+const char *args_option(Args *args, const char *option) {
+  if (args == NULL ||
+      args->values == NULL ||
+      option == NULL ||
+      *option == '\0')
+    return NULL;
+
+  size_t option_len = strlen(option);
+
+  for (size_t i = 0; i < args->count; ++i) {
+    const char *arg = args->values[i];
+
+    if (arg == NULL)
+      continue;
+
+    if (strncmp(arg, option, option_len) == 0 &&
+        arg[option_len] == '=') {
+      return arg + option_len + 1;
+    }
+    
+    if (strcmp(arg, option) == 0) {
+      if (i + 1 >= args->count)
+        return NULL;
+
+      const char *value = args->values[i + 1];
+
+      if (value == NULL || value[0] == '-')
+        return NULL;
+
+      return value;
+    }
+  }
+
+  return NULL;
+}
+
 
 #endif /* ZAP_IMPLEMENTATION */
 
