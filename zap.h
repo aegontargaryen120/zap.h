@@ -205,7 +205,7 @@ bool write_file(const char *path, const char *contents) {
 }
 
 void cc(Cmd *cmd) {
-  cmd_append(cmd, "clang");
+  cmd_append(cmd, "cc");
 }
 
 void cc_flags(Cmd *cmd) {
