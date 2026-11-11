@@ -2,7 +2,11 @@
 #include "./zap.h"
 
 int main(int argc, char **argv) {
-  ZAP_REBUILD_URSELF(argc, argv);
+  if (!ZAP_REBUILD_URSELF(argc, argv)) {
+    fprintf(stderr, err_fmt"Rebuild failed.\n");
+    return 1;
+  }
+  
   Cmd cmd = {0};
 
   printf(info_fmt"Creating directory `bin`...\n");
